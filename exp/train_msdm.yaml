@@ -3,9 +3,9 @@
 sampling_rate: 22050
 dataset_path: ${work_dir}/data/speech_n_speech_data
 #length: 262144
-length: 16384
+length: 4096
 channels: 1
-min_duration: 1.0
+min_duration: 0.2
 max_duration: 12.0
 aug_shift: True
 #stems: ['bass', 'drums', 'guitar', 'piano']
