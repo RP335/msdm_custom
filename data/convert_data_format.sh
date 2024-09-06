@@ -4,7 +4,7 @@ OUT_DIR="$DATA_DIR/speech_n_speech_data"
 
 for STEM in $STEMS
 do
-	STEM_DIR="$DATA_DIR/${STEM}_22050_1"
+	STEM_DIR="$DATA_DIR/${STEM}_22050_2"
 	
 	for SPLIT_DIR in $STEM_DIR/*
 	do
