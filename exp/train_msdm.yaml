@@ -18,7 +18,7 @@ model:
   beta1: 0.9
   beta2: 0.99
   in_channels: 2
-  channels: 128
+  channels: 256
   patch_factor: 16
   patch_blocks: 1
   resnet_groups: 8
@@ -30,7 +30,7 @@ model:
   num_blocks: [2, 2, 2, 2, 2, 2]
   attentions: [False, False, False, True, True, True]
   attention_heads: 8
-  attention_features: 64
+  attention_features: 128
   attention_multiplier: 2
   use_nearest_upsample: False
   use_skip_scale: True
@@ -66,8 +66,8 @@ datamodule:
     sample_length: ${length}
     stems: ${stems}
 
-  batch_size: 8
-  num_workers: 4
+  batch_size: 16
+  num_workers: 8
   pin_memory: True
 
 callbacks:
@@ -121,7 +121,7 @@ loggers:
 trainer:
   _target_: pytorch_lightning.Trainer
   gpus: -1 # Set `1` to train on GPU, `0` to train on CPU only, and `-1` to train on all GPUs, default `0`
-  precision: 32 # Precision used for tensors, default `32`
+  precision: 16 # Precision used for tensors, default `32`
   accelerator: "cuda" # `ddp` GPUs train individually and sync gradients, default `None`
   min_epochs: 0
   max_epochs: -1
