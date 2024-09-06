@@ -1,11 +1,11 @@
 # @package _global_
 
 sampling_rate: 22050
-dataset_path: ${work_dir}/data/slakh2100
-length: 262144
+dataset_path: ${work_dir}/data/speech_n_speech_data
+length: 16384
 channels: 1
-min_duration: 12.0
-max_duration: 640.0
+min_duration: 1.0
+max_duration: 12.0
 aug_shift: True
 stem: ???
 
@@ -116,12 +116,12 @@ loggers:
 
 trainer:
   _target_: pytorch_lightning.Trainer
-  gpus: 1 # Set `1` to train on GPU, `0` to train on CPU only, and `-1` to train on all GPUs, default `0`
+  gpus: -1 # Set `1` to train on GPU, `0` to train on CPU only, and `-1` to train on all GPUs, default `0`
   precision: "bf16" # Precision used for tensors, default `32`
-  accelerator: "cpu" # `ddp` GPUs train individually and sync gradients, default `None`
+  accelerator: "cuda" # `ddp` GPUs train individually and sync gradients, default `None`
   min_epochs: 0
   max_epochs: -1
   enable_model_summary: False
   log_every_n_steps: 10 # Logs metrics every N batches
   check_val_every_n_epoch: null
-  val_check_interval: 4000
+  val_check_interval: 1000
