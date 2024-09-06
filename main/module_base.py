@@ -42,7 +42,7 @@ class Model(pl.LightningModule):
         # print(f"Training batch shape: {waveforms.shape}")
         loss = self.model(waveforms)
         self.log("train_loss", loss)
-        print("loss")
+        # print("loss")
         return loss
 
     def validation_step(self, batch, batch_idx):
