@@ -3,8 +3,8 @@
 sampling_rate: 22050
 dataset_path: ${work_dir}/data/speech_n_speech_data
 #length: 262144
-length:
-channels: 16384
+length: 16384
+channels: 1
 min_duration: 1.0
 max_duration: 60.0
 aug_shift: True
