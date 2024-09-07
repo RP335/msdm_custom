@@ -23,7 +23,7 @@ denoise_fn = model.model.diffusion.denoise_fn
 import soundfile as sf
 import torch
 
-audio, sr = sf.read('data/dummy_speech_n_speech/mixture_1.wav')
+audio, sr = sf.read('data/dummy_speech_n_speech/mixture_2.wav')
 audio = torch.from_numpy(audio.transpose(1,0).reshape(1,2,-1)).float() # seq_len, 2 -> 2, seq_len -> 1, 2, seq_len ( batch, stereo, seq_len)
 print(audio.shape, sr) # If the audio's sampling rate is not 22050, you should adjust your audio file to match the target sampling rate.
 
@@ -39,14 +39,14 @@ num_resamples = 2
 schedule = KarrasSchedule(sigma_min=1e-4, sigma_max=20.0, rho=7)(num_steps, DEVICE)
 
 start_idx = 0
-sources = audio[:,:, start_idx:start_idx + 16384].to(DEVICE)
+sources = audio[:,:, start_idx:start_idx + 262144].to(DEVICE)
 sources = ((sources[:,0:1] + sources[:,1:2])/2).float() # Stereo to mono
 
 separated = separate_mixture(
     mixture= sources,
     denoise_fn= denoise_fn,
     sigmas=schedule,
-    noises= torch.randn(1, 2, 16384).to(DEVICE),
+    noises= torch.randn(1, 2, 262144).to(DEVICE),
     s_churn=s_churn, # > 0 to add randomness
     num_resamples= num_resamples,
 )
