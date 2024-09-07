@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import *
 import torch
 
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda")
 SAMPLE_RATE = 22050 # < IMPORTANT: do not change
 STEMS = ["speech", "non_speech"] # < IMPORTANT: do not change
 # ROOT_PATH = Path("..").resolve().absolute()
@@ -17,7 +17,7 @@ DATA_PATH = "data"
 from main.module_base import Model
 
 # Load model
-model = Model.load_from_checkpoint("ckpts/run-4am/epoch=22-valid_loss=0.075.ckpt").to(DEVICE)
+model = Model.load_from_checkpoint("ckpts/run-aws-4/epoch=404-valid_loss=0.067.ckpt").to(DEVICE)
 denoise_fn = model.model.diffusion.denoise_fn
 
 import soundfile as sf
@@ -39,14 +39,14 @@ num_resamples = 2
 schedule = KarrasSchedule(sigma_min=1e-4, sigma_max=20.0, rho=7)(num_steps, DEVICE)
 
 start_idx = 0
-sources = audio[:,:, start_idx:start_idx + 262144].to(DEVICE)
+sources = audio[:,:, start_idx:start_idx + 16384].to(DEVICE)
 sources = ((sources[:,0:1] + sources[:,1:2])/2).float() # Stereo to mono
 
 separated = separate_mixture(
     mixture= sources,
     denoise_fn= denoise_fn,
     sigmas=schedule,
-    noises= torch.randn(1, 2, 262144).to(DEVICE),
+    noises= torch.randn(1, 2, 16384).to(DEVICE),
     s_churn=s_churn, # > 0 to add randomness
     num_resamples= num_resamples,
 )
