@@ -59,7 +59,7 @@ def separate_slakh_weak_msdm(
         assert source_id is not None
         diff_fn = functools.partial(differential_with_dirac, source_id=source_id)
 
-    stem_to_model = {stem: Model.load_from_checkpoint(model_path, map_location=torch.device('mps')) for stem, model_path in model_paths.items()}
+    stem_to_model = {stem: Model.load_from_checkpoint(model_path, map_location=torch.device('cuda')) for stem, model_path in model_paths.items()}
     separator = WeaklyMSDMSeparator(
         stem_to_model=stem_to_model,
         sigma_schedule=KarrasSchedule(sigma_min=1e-4, sigma_max=1.0, rho=7.0),
@@ -113,7 +113,7 @@ def separate_slakh_msdm(
         mixture_file="data/dummy_speech_n_speech/mixture_2_sampled.wav"
     )
 
-    model = Model.load_from_checkpoint(model_path, map_location=torch.device('mps'))
+    model = Model.load_from_checkpoint(model_path, map_location=torch.device('cuda'))
 
     if use_gaussian:
         assert gamma is not None
