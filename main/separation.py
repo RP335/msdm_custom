@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from main.data import assert_is_audio, SeparationDataset
 from main.module_base import Model
 
+
 class Separator(torch.nn.Module, abc.ABC):
     def __init__(self):
         super().__init__()
@@ -84,6 +85,14 @@ class WeaklyMSDMSeparator(Separator):
 
 def differential_with_dirac(x, sigma, denoise_fn, mixture, source_id=0):
     num_sources = x.shape[1]
+
+    if mixture.shape[1] == 2:
+        mixture = mixture.mean(dim=1, keepdim=True)
+
+    # Ensure mixture has the same number of dimensions as x
+    if mixture.dim() == 2:
+        mixture = mixture.unsqueeze(1)
+
     x[:, [source_id], :] = mixture - (x.sum(dim=1, keepdim=True) - x[:, [source_id], :])
     score = (x - denoise_fn(x, sigma=sigma)) / sigma
     scores = [score[:, si] for si in range(num_sources)]
@@ -112,7 +121,10 @@ def separate_mixture(
 ):      
     # Set initial noise
     x = sigmas[0] * noises # [batch_size, num-sources, sample-length]
-    
+
+    if mixture.shape[1] == 2:
+        mixture = mixture.mean(dim=1, keepdim=True)
+
     vis_wrapper  = tqdm.tqdm if use_tqdm else lambda x:x 
     for i in vis_wrapper(range(len(sigmas) - 1)):
         sigma, sigma_next = sigmas[i], sigmas[i+1]
@@ -180,7 +192,14 @@ def separate_dataset(
         print(f"batch {batch_idx+1} out of {ceil(len(dataset) / batch[0].shape[0])}")
         
         # Generate mixture
-        mixture = sum(tracks)
+        # mixture = sum(tracks)
+
+        if len(batch) == 1:
+            mixture = batch[0]
+        else:
+            # Create mixture from stems
+            mixture = sum(batch)
+
 
         print("mixture", mixture)
         seps_dict = separator.separate(mixture=mixture, num_steps=num_steps)
@@ -197,5 +216,24 @@ def separate_dataset(
                 chunk_path=chunk_path,
             )
             chunk_id += 1
+
+    consolidate_stems(Path(save_path), dataset.stems)
+
+def consolidate_stems(separation_dir: Path, stems: List[str]):
+    consolidated_dir = separation_dir / "consolidated_stems"
+    consolidated_dir.mkdir(exist_ok=True)
+
+    for stem in stems:
+        consolidated_audio = []
+        for chunk_dir in sorted(separation_dir.glob('[0-9]*'), key=lambda x: int(x.name)):
+            stem_file = chunk_dir / f"{stem}.wav"
+            if stem_file.exists():
+                audio, sr = torchaudio.load(stem_file)
+                consolidated_audio.append(audio)
+
+        if consolidated_audio:
+            consolidated_stem = torch.cat(consolidated_audio, dim=1)
+            torchaudio.save(consolidated_dir / f"{stem}_consolidated.wav", consolidated_stem, sr)
+
 
 

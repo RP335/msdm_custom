@@ -370,9 +370,12 @@ class ChunkedSupervisedDataset(SupervisedDataset):
         min_chunk_size: int,
         silence_threshold: Optional[float]= None,
         only_multisource: bool = False,
+        mixture_file: Optional[str] = None,  # optional for mixture
+
     ):
         super().__init__(audio_dir=audio_dir, stems=stems, sample_rate=sample_rate)
 
+        self.mixture_file = mixture_file
         self.max_chunk_size ,self.min_chunk_size= max_chunk_size, min_chunk_size
         self.available_chunk = {}
         self.index_to_track, self.index_to_chunk = [], []
@@ -401,9 +404,17 @@ class ChunkedSupervisedDataset(SupervisedDataset):
 
     def __getitem__(self, item: int) -> Tuple[torch.Tensor, ...]:
         chunk_start, chunk_stop = self.get_chunk_indices(item)
-        tracks = self.get_tracks(self.get_chunk_track(item))
-        tracks = tuple([t[:, chunk_start:chunk_stop] for t in tracks])
-        return tracks
+        # tracks = self.get_tracks(self.get_chunk_track(item))
+        # tracks = tuple([t[:, chunk_start:chunk_stop] for t in tracks])
+        # return tracks
+        if self.mixture_file:
+            mixture, sr = torchaudio.load(self.mixture_file, frame_offset=chunk_start, num_frames=self.max_chunk_size)
+            assert sr == self.sample_rate, f"Mixture sample rate {sr} different from expected {self.sample_rate}"
+            return (mixture,)
+        else:
+            tracks = self.get_tracks(self.get_chunk_track(item))
+            tracks = tuple([t[:, chunk_start:chunk_stop] for t in tracks])
+            return tracks
     
     def _get_available_chunks(self, track: str):
         tracks = self.get_tracks(track) # (num_stems, [1, num_samples])
@@ -414,4 +425,5 @@ class ChunkedSupervisedDataset(SupervisedDataset):
             self.silence_threshold,
             self.only_multisource,
             )
-        return track, available_chunks 
+        return track, available_chunks
+

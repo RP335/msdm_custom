@@ -48,8 +48,8 @@ def separate_slakh_weak_msdm(
         # stems=["bass", "drums", "guitar", "piano"],
         stems=["non_speech", "speech"],
         sample_rate=22050,
-        max_chunk_size=262144,
-        min_chunk_size=262144,
+        max_chunk_size=16384,
+        min_chunk_size=16384,
     )
 
     if use_gaussian:
@@ -108,8 +108,9 @@ def separate_slakh_msdm(
         # stems=["bass", "drums", "guitar", "piano"],
         stems=["non_speech", "speech"],
         sample_rate=22050,
-        max_chunk_size=262144,
-        min_chunk_size=262144,
+        max_chunk_size=16384,
+        min_chunk_size=16384,
+        mixture_file="data/dummy_speech_n_speech/mixture_2_sampled.wav"
     )
 
     model = Model.load_from_checkpoint(model_path, map_location=torch.device('mps'))
